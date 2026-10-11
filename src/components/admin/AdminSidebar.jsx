@@ -85,6 +85,20 @@ function AdminSidebar() {
                 </NavLink>
 
                 <NavLink
+                    to="/admin/academic-structure"
+                    className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
+                >
+                    Cohorts &amp; Sections
+                </NavLink>
+
+                <NavLink
+                    to="/admin/class-incharges"
+                    className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
+                >
+                    Class Incharges
+                </NavLink>
+
+                <NavLink
                     to="/admin/courses"
                     className={({ isActive }) =>
                         isActive ? "nav-item active" : "nav-item"

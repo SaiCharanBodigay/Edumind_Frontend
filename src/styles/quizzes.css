@@ -1,0 +1,279 @@
+/* ==========================================================================
+   EduMind — Quizzes & Assessment Styles
+   Clean, focused, modern university examination experience
+   ========================================================================== */
+
+.quiz-management-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr));
+    gap: 20px;
+    align-items: start;
+}
+
+.quiz-management-card,
+.quiz-attempt-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    box-shadow: var(--shadow-xs);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    transition: all var(--transition-base);
+    margin-bottom: 16px;
+}
+
+.quiz-management-card:hover,
+.quiz-attempt-card:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-sm);
+}
+
+.quiz-management-card h3,
+.quiz-management-card h2 {
+    margin: 6px 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-heading);
+}
+
+.quiz-management-card p,
+.quiz-attempt-card p {
+    color: var(--text-muted);
+    margin: 4px 0 10px 0;
+    font-size: 0.88rem;
+    line-height: 1.45;
+}
+
+.quiz-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: capitalize;
+    letter-spacing: 0.02em;
+}
+
+.quiz-status.published,
+.quiz-status.available,
+.quiz-status.submitted {
+    background: var(--success-soft);
+    color: var(--success-text);
+}
+
+.quiz-status.upcoming,
+.quiz-status.in_progress,
+.quiz-status.attempts_exhausted,
+.quiz-status.closed {
+    background: var(--warning-soft);
+    color: var(--warning-text);
+}
+
+.quiz-status.draft {
+    background: var(--bg-subtle);
+    color: var(--text-muted);
+}
+
+/* Quiz Editor (Faculty) */
+.quiz-editor {
+    margin-bottom: 28px;
+}
+
+.quiz-question-builder {
+    display: grid;
+    gap: 18px;
+    margin-top: 22px;
+}
+
+.quiz-question-edit {
+    min-width: 0;
+    padding: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-xs);
+    position: relative;
+}
+
+.quiz-question-edit legend {
+    padding: 0 10px;
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--text-heading);
+}
+
+.quiz-options-builder,
+.quiz-taking-options {
+    display: grid;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.quiz-option-edit {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) auto auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--bg-canvas);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+
+.quiz-option-edit label,
+.quiz-taking-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+}
+
+.quiz-attempts-panel {
+    min-width: 0;
+}
+
+.quiz-attempt-card {
+    display: block;
+}
+
+.quiz-attempt-card summary {
+    cursor: pointer;
+    font-weight: 700;
+    color: var(--text-heading);
+    padding: 4px 0;
+}
+
+.quiz-answer-review {
+    padding: 14px 0;
+    border-top: 1px solid var(--border);
+    margin-top: 12px;
+}
+
+/* Timed Assessment Interface (Student) */
+.quiz-timer {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: var(--radius-full);
+    background: var(--warning-soft);
+    color: var(--warning-text);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    font-family: var(--font-mono);
+    font-size: 0.94rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    box-shadow: var(--shadow-sm);
+}
+
+.quiz-taking-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    box-shadow: var(--shadow-sm);
+}
+
+.quiz-taking-card h2 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--text-heading);
+    margin: 8px 0 20px 0;
+    line-height: 1.4;
+}
+
+.quiz-taking-option {
+    padding: 16px 18px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    user-select: none;
+}
+
+.quiz-taking-option:hover {
+    border-color: var(--primary);
+    background: var(--surface-hover);
+}
+
+.quiz-taking-option:has(input:checked) {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+    box-shadow: 0 0 0 1px var(--primary);
+}
+
+.quiz-taking-option input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+.quiz-question-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+.quiz-question-nav button {
+    min-width: 44px;
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.quiz-question-nav button:hover {
+    border-color: var(--border-strong);
+    background: var(--surface-hover);
+    color: var(--text);
+}
+
+.quiz-question-nav button.active {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: #ffffff;
+    box-shadow: var(--shadow-xs);
+}
+
+.quiz-result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-xs);
+}
+
+.quiz-result-card h2 {
+    font-size: 1.15rem;
+    margin-bottom: 8px;
+}
+
+@media (max-width: 700px) {
+    .quiz-management-card,
+    .quiz-option-edit {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

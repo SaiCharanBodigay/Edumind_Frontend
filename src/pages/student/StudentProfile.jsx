@@ -75,6 +75,14 @@ function StudentProfile() {
                             <span className="faculty-profile-label">Academic Year</span>
                             <strong>{profile.academicYear}</strong>
                         </div>
+                        <div>
+                            <span className="faculty-profile-label">Cohort / Batch</span>
+                            <strong>{profile.cohortName || "Not assigned"}</strong>
+                        </div>
+                        <div>
+                            <span className="faculty-profile-label">Section</span>
+                            <strong>{profile.sectionName || "Not assigned"}</strong>
+                        </div>
                     </section>
                 )}
             </div>

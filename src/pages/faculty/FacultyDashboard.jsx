@@ -7,6 +7,7 @@ function FacultyDashboard() {
     const navigate = useNavigate();
     const [profile, setProfile] = useState(null);
     const [courses, setCourses] = useState([]);
+    const [sections, setSections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
@@ -20,13 +21,15 @@ function FacultyDashboard() {
         let cancelled = false;
         const loadPortal = async () => {
             try {
-                const [profileResponse, coursesResponse] = await Promise.all([
+                const [profileResponse, coursesResponse, sectionsResponse] = await Promise.all([
                     api.get("/api/faculty/me"),
-                    api.get("/api/faculty/me/courses")
+                    api.get("/api/faculty/me/courses"),
+                    api.get("/api/faculty/me/sections")
                 ]);
                 if (!cancelled) {
                     setProfile(profileResponse.data);
                     setCourses(coursesResponse.data);
+                    setSections(sectionsResponse.data);
                 }
             } catch (requestError) {
                 console.error("Faculty dashboard error:", requestError);
@@ -140,6 +143,16 @@ function FacultyDashboard() {
                                 </article>
                             ))}
                         </div>
+                    )}
+
+                    {sections.length > 0 && (
+                        <section className="faculty-section-heading">
+                            <h2>My Class / My Sections</h2>
+                            <span className="faculty-course-count">{sections.length}</span>
+                            <button className="secondary-button" onClick={() => navigate("/faculty/sections")}>
+                                View assigned rosters
+                            </button>
+                        </section>
                     )}
                 </main>
             </div>

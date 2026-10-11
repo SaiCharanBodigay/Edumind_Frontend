@@ -50,6 +50,20 @@ function FacultySidebar() {
                 >
                     Assignments
                 </NavLink>
+                <NavLink
+                    to="/faculty/quizzes"
+                    className={({ isActive }) =>
+                        isActive ? "nav-item active" : "nav-item"
+                    }
+                >
+                    Quizzes
+                </NavLink>
+                <NavLink
+                    to="/faculty/sections"
+                    className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
+                >
+                    My Class / Sections
+                </NavLink>
             </nav>
 
             <div className="sidebar-bottom">

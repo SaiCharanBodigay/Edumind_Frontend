@@ -1,13 +1,22 @@
-import StudentSidebar from "./StudentSidebar";
+import { AppShell } from "../common/AppShell";
+
+const STUDENT_NAV = [
+    { to: "/student/dashboard", label: "Dashboard", icon: "dashboard" },
+    { to: "/student/courses", label: "My Courses", icon: "courses" },
+    { to: "/student/assignments", label: "Assignments", icon: "assignments" },
+    { to: "/student/quizzes", label: "Quizzes", icon: "quizzes" },
+    { to: "/student/profile", label: "Profile", icon: "profile" },
+];
 
 function StudentLayout({ children }) {
     return (
-        <div className="admin-layout student-layout">
-            <StudentSidebar />
-            <main className="admin-main">
-                {children}
-            </main>
-        </div>
+        <AppShell
+            role="STUDENT"
+            portalName="Student Portal"
+            navItems={STUDENT_NAV}
+        >
+            {children}
+        </AppShell>
     );
 }
 

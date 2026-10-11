@@ -613,6 +613,7 @@ function AdminFaculty() {
                                     <th>Email</th>
                                     <th>Designation</th>
                                     <th>Department</th>
+                                    <th>Class Incharge</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -622,7 +623,7 @@ function AdminFaculty() {
                                 {filteredFaculty.length === 0 ? (
                                     <tr>
                                         <td
-                                            colSpan="8"
+                                            colSpan="9"
                                             className="empty-state"
                                         >
                                             No faculty members match your search or filters.
@@ -658,6 +659,12 @@ function AdminFaculty() {
 
                                             <td>
                                                 {member.departmentName}
+                                            </td>
+
+                                            <td>
+                                                {member.activeClassInchargeSections?.length
+                                                    ? member.activeClassInchargeSections.join(", ")
+                                                    : "No active section"}
                                             </td>
 
                                             <td>

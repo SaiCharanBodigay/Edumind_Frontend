@@ -43,6 +43,14 @@ function StudentSidebar() {
                     Assignments
                 </NavLink>
                 <NavLink
+                    to="/student/quizzes"
+                    className={({ isActive }) =>
+                        isActive ? "nav-item active" : "nav-item"
+                    }
+                >
+                    Quizzes
+                </NavLink>
+                <NavLink
                     to="/student/profile"
                     className={({ isActive }) =>
                         isActive ? "nav-item active" : "nav-item"

@@ -10,9 +10,13 @@ function AdminStudents() {
     const [departments, setDepartments] = useState([]);
     const [programs, setPrograms] = useState([]);
     const [semesters, setSemesters] = useState([]);
+    const [cohorts, setCohorts] = useState([]);
+    const [sections, setSections] = useState([]);
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [totalStudents, setTotalStudents] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
 
     const [showForm, setShowForm] = useState(false);
     const [editingStudent, setEditingStudent] = useState(null);
@@ -26,6 +30,9 @@ function AdminStudents() {
     const [filterDepartment, setFilterDepartment] = useState("");
     const [filterProgram, setFilterProgram] = useState("");
     const [filterSemester, setFilterSemester] = useState("");
+    const [filterCohort, setFilterCohort] = useState("");
+    const [filterSection, setFilterSection] = useState("");
+    const [page, setPage] = useState(0);
 
     const [formData, setFormData] = useState({
         username: "",
@@ -35,13 +42,26 @@ function AdminStudents() {
         rollNumber: "",
         departmentId: "",
         programId: "",
-        semesterId: ""
+        semesterId: "",
+        cohortId: "",
+        sectionId: ""
     });
 
     const fetchStudents = useCallback(async () => {
-        const response = await api.get("/api/admin/students");
+        const response = await api.get("/api/admin/students/search", {
+            params: {
+                search: searchTerm || undefined,
+                departmentId: filterDepartment || undefined,
+                programId: filterProgram || undefined,
+                cohortId: filterCohort || undefined,
+                semesterId: filterSemester || undefined,
+                sectionId: filterSection || undefined,
+                page,
+                size: 25
+            }
+        });
         return response.data;
-    }, []);
+    }, [searchTerm, filterDepartment, filterProgram, filterCohort, filterSemester, filterSection, page]);
 
     const fetchDepartments = useCallback(async () => {
         const response = await api.get("/api/admin/departments");
@@ -58,9 +78,23 @@ function AdminStudents() {
         return response.data;
     }, []);
 
+    const fetchCohorts = useCallback(async () => {
+        const response = await api.get("/api/admin/cohorts");
+        return response.data;
+    }, []);
+
+    const fetchSections = useCallback(async () => {
+        const response = await api.get("/api/admin/sections");
+        return response.data;
+    }, []);
+
     const loadStudents = async () => {
         try {
-            setStudents(await fetchStudents());
+            setLoading(true);
+            const result = await fetchStudents();
+            setStudents(result.content);
+            setTotalStudents(result.totalElements);
+            setTotalPages(result.totalPages);
             setError("");
         } catch (error) {
             console.error("Students error:", error);
@@ -87,22 +121,25 @@ function AdminStudents() {
         const loadInitialData = async () => {
             try {
                 const [
-                    studentsData,
                     departmentsData,
                     programsData,
-                    semestersData
+                    semestersData,
+                    cohortsData,
+                    sectionsData
                 ] = await Promise.all([
-                    fetchStudents(),
                     fetchDepartments(),
                     fetchPrograms(),
-                    fetchSemesters()
+                    fetchSemesters(),
+                    fetchCohorts(),
+                    fetchSections()
                 ]);
 
                 if (!cancelled) {
-                    setStudents(studentsData);
                     setDepartments(departmentsData);
                     setPrograms(programsData);
                     setSemesters(semestersData);
+                    setCohorts(cohortsData);
+                    setSections(sectionsData);
                 }
             } catch (error) {
                 console.error("Student page load error:", error);
@@ -127,11 +164,38 @@ function AdminStudents() {
         };
     }, [
         navigate,
-        fetchStudents,
         fetchDepartments,
         fetchPrograms,
-        fetchSemesters
+        fetchSemesters,
+        fetchCohorts,
+        fetchSections
     ]);
+
+    useEffect(() => {
+        let cancelled = false;
+        const timer = window.setTimeout(async () => {
+            try {
+                setLoading(true);
+                const result = await fetchStudents();
+                if (!cancelled) {
+                    setStudents(result.content);
+                    setTotalStudents(result.totalElements);
+                    setTotalPages(result.totalPages);
+                    setError("");
+                }
+            } catch (requestError) {
+                if (!cancelled) {
+                    setError(requestError.response?.data?.message || "Unable to search students.");
+                }
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        }, searchTerm ? 250 : 0);
+        return () => {
+            cancelled = true;
+            window.clearTimeout(timer);
+        };
+    }, [fetchStudents, searchTerm]);
 
     const resetForm = () => {
         setFormData({
@@ -142,7 +206,9 @@ function AdminStudents() {
             rollNumber: "",
             departmentId: "",
             programId: "",
-            semesterId: ""
+            semesterId: "",
+            cohortId: "",
+            sectionId: ""
         });
 
         setEditingStudent(null);
@@ -157,7 +223,9 @@ function AdminStudents() {
                 ...previous,
                 departmentId: value,
                 programId: "",
-                semesterId: ""
+                semesterId: "",
+                cohortId: "",
+                sectionId: ""
             }));
 
             return;
@@ -167,9 +235,20 @@ function AdminStudents() {
             setFormData((previous) => ({
                 ...previous,
                 programId: value,
-                semesterId: ""
+                semesterId: "",
+                cohortId: "",
+                sectionId: ""
             }));
 
+            return;
+        }
+
+        if (name === "semesterId" || name === "cohortId") {
+            setFormData((previous) => ({
+                ...previous,
+                [name]: value,
+                sectionId: ""
+            }));
             return;
         }
 
@@ -203,7 +282,9 @@ function AdminStudents() {
                 : "",
             semesterId: student.semesterId
                 ? String(student.semesterId)
-                : ""
+                : "",
+            cohortId: student.cohortId ? String(student.cohortId) : "",
+            sectionId: student.sectionId ? String(student.sectionId) : ""
         });
 
         window.scrollTo({
@@ -233,7 +314,9 @@ function AdminStudents() {
                         rollNumber: formData.rollNumber,
                         departmentId: Number(formData.departmentId),
                         programId: Number(formData.programId),
-                        semesterId: Number(formData.semesterId)
+                        semesterId: Number(formData.semesterId),
+                        cohortId: Number(formData.cohortId),
+                        sectionId: Number(formData.sectionId)
                     }
                 );
 
@@ -249,7 +332,9 @@ function AdminStudents() {
                         rollNumber: formData.rollNumber,
                         departmentId: Number(formData.departmentId),
                         programId: Number(formData.programId),
-                        semesterId: Number(formData.semesterId)
+                        semesterId: Number(formData.semesterId),
+                        cohortId: Number(formData.cohortId),
+                        sectionId: Number(formData.sectionId)
                     }
                 );
 
@@ -324,6 +409,12 @@ function AdminStudents() {
         return String(semesterProgramId) === selectedProgramId;
     });
 
+    const formCohorts = cohorts.filter((cohort) =>
+        !formData.programId || String(cohort.programId) === String(formData.programId));
+    const formSections = sections.filter((section) =>
+        String(section.cohortId) === String(formData.cohortId)
+        && String(section.semesterId) === String(formData.semesterId));
+
     // =========================
     // SEARCH + FILTERING
     // =========================
@@ -337,7 +428,8 @@ function AdminStudents() {
                 search === "" ||
                 student.fullName?.toLowerCase().includes(search) ||
                 student.rollNumber?.toLowerCase().includes(search) ||
-                student.username?.toLowerCase().includes(search);
+                student.username?.toLowerCase().includes(search) ||
+                student.email?.toLowerCase().includes(search);
 
             const matchesDepartment =
                 filterDepartment === "" ||
@@ -350,12 +442,20 @@ function AdminStudents() {
             const matchesSemester =
                 filterSemester === "" ||
                 String(student.semesterId) === filterSemester;
+            const matchesCohort =
+                filterCohort === "" ||
+                String(student.cohortId) === filterCohort;
+            const matchesSection =
+                filterSection === "" ||
+                String(student.sectionId) === filterSection;
 
             return (
                 matchesSearch &&
                 matchesDepartment &&
                 matchesProgram &&
-                matchesSemester
+                matchesSemester &&
+                matchesCohort &&
+                matchesSection
             );
         });
     }, [
@@ -363,7 +463,9 @@ function AdminStudents() {
         searchTerm,
         filterDepartment,
         filterProgram,
-        filterSemester
+        filterSemester,
+        filterCohort,
+        filterSection
     ]);
 
     const filterPrograms = programs.filter((program) => {
@@ -390,11 +492,24 @@ function AdminStudents() {
         return String(programId) === filterProgram;
     });
 
+    const filterCohorts = cohorts.filter((cohort) =>
+        (!filterProgram || String(cohort.programId) === filterProgram)
+        && (!filterDepartment || String(cohort.departmentId) === filterDepartment));
+    const filterSections = sections.filter((section) =>
+        (!filterCohort || String(section.cohortId) === filterCohort)
+        && (!filterSemester || String(section.semesterId) === filterSemester));
+    const pageCount = Math.max(1, totalPages);
+    const currentPage = Math.min(page, pageCount - 1);
+    const visibleStudents = filteredStudents;
+
     const clearFilters = () => {
         setSearchTerm("");
         setFilterDepartment("");
         setFilterProgram("");
         setFilterSemester("");
+        setFilterCohort("");
+        setFilterSection("");
+        setPage(0);
     };
 
     return (
@@ -598,6 +713,48 @@ function AdminStudents() {
                                     </select>
                                 </div>
 
+                                <div className="form-group">
+                                    <label>Academic Cohort / Batch</label>
+                                    <select
+                                        name="cohortId"
+                                        value={formData.cohortId}
+                                        onChange={handleChange}
+                                        disabled={!formData.programId}
+                                        required
+                                    >
+                                        <option value="">
+                                            {!formData.programId
+                                                ? "Select Program First"
+                                                : "Select Cohort"}
+                                        </option>
+                                        {formCohorts.map((cohort) => (
+                                            <option key={cohort.id} value={cohort.id}>
+                                                {cohort.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Section</label>
+                                    <select
+                                        name="sectionId"
+                                        value={formData.sectionId}
+                                        onChange={handleChange}
+                                        disabled={!formData.cohortId || !formData.semesterId}
+                                        required
+                                    >
+                                        <option value="">Select Section</option>
+                                        {formSections.map((section) => (
+                                            <option key={section.id} value={section.id}>
+                                                {section.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {formData.cohortId && formData.semesterId && formSections.length === 0
+                                        && <small>Create the section before assigning this student.</small>}
+                                </div>
+
                             </div>
 
                             {formMessage && (
@@ -647,10 +804,11 @@ function AdminStudents() {
                         <input
                             type="text"
                             value={searchTerm}
-                            onChange={(event) =>
-                                setSearchTerm(event.target.value)
-                            }
-                            placeholder="Search by name, roll number or username..."
+                            onChange={(event) => {
+                                setSearchTerm(event.target.value);
+                                setPage(0);
+                            }}
+                            placeholder="Search by name, roll number, username or email..."
                         />
 
                     </div>
@@ -670,6 +828,9 @@ function AdminStudents() {
 
                                     setFilterProgram("");
                                     setFilterSemester("");
+                                    setFilterCohort("");
+                                    setFilterSection("");
+                                    setPage(0);
                                 }}
                             >
                                 <option value="">
@@ -689,6 +850,39 @@ function AdminStudents() {
                         </div>
 
                         <div className="filter-group">
+                            <label>Academic Cohort / Batch</label>
+                            <select
+                                value={filterCohort}
+                                onChange={(event) => {
+                                    setFilterCohort(event.target.value);
+                                    setFilterSection("");
+                                    setPage(0);
+                                }}
+                            >
+                                <option value="">All cohorts</option>
+                                {filterCohorts.map((cohort) => (
+                                    <option key={cohort.id} value={cohort.id}>{cohort.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="filter-group">
+                            <label>Section</label>
+                            <select
+                                value={filterSection}
+                                onChange={(event) => {
+                                    setFilterSection(event.target.value);
+                                    setPage(0);
+                                }}
+                            >
+                                <option value="">All sections</option>
+                                {filterSections.map((section) => (
+                                    <option key={section.id} value={section.id}>{section.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="filter-group">
 
                             <label>Program</label>
 
@@ -698,15 +892,20 @@ function AdminStudents() {
                                     setFilterProgram(
                                         event.target.value
                                     );
-
+                                    const selectedProgram = programs.find(
+                                        (program) => String(program.id) === event.target.value);
+                                    setFilterDepartment(
+                                        selectedProgram
+                                            ? String(selectedProgram.departmentId ?? selectedProgram.department?.id ?? "")
+                                            : "");
                                     setFilterSemester("");
+                                    setFilterCohort("");
+                                    setFilterSection("");
+                                    setPage(0);
                                 }}
-                                disabled={!filterDepartment}
                             >
                                 <option value="">
-                                    {!filterDepartment
-                                        ? "Select Department First"
-                                        : "All Programs"}
+                                    All Programs
                                 </option>
 
                                 {filterPrograms.map((program) => (
@@ -729,9 +928,11 @@ function AdminStudents() {
                             <select
                                 value={filterSemester}
                                 onChange={(event) =>
-                                    setFilterSemester(
-                                        event.target.value
-                                    )
+                                    (() => {
+                                        setFilterSemester(event.target.value);
+                                        setFilterSection("");
+                                        setPage(0);
+                                    })()
                                 }
                                 disabled={!filterProgram}
                             >
@@ -746,8 +947,9 @@ function AdminStudents() {
                                         key={semester.id}
                                         value={semester.id}
                                     >
-                                        Semester{" "}
-                                        {semester.semesterNumber}
+                                        Semester {semester.semesterNumber}
+                                        {" · "}
+                                        {semester.academicYear?.name || semester.academicYearName || ""}
                                     </option>
                                 ))}
 
@@ -760,6 +962,7 @@ function AdminStudents() {
                             <button
                                 className="secondary-button"
                                 onClick={clearFilters}
+                                type="button"
                             >
                                 Clear Filters
                             </button>
@@ -769,11 +972,17 @@ function AdminStudents() {
                     </div>
 
                     <div className="result-count">
-                        Showing{" "}
-                        <strong>{filteredStudents.length}</strong>{" "}
-                        of{" "}
-                        <strong>{students.length}</strong>{" "}
-                        students
+                        {[
+                            programs.find((item) => String(item.id) === filterProgram)?.name,
+                            departments.find((item) => String(item.id) === filterDepartment)?.name,
+                            cohorts.find((item) => String(item.id) === filterCohort)?.name,
+                            semesters.find((item) => String(item.id) === filterSemester)
+                                ? `Semester ${semesters.find((item) => String(item.id) === filterSemester).semesterNumber}`
+                                : null,
+                            sections.find((item) => String(item.id) === filterSection)?.name
+                        ].filter(Boolean).join(" → ") || "Institution-wide student search"}
+                        {" · Showing "}<strong>{filteredStudents.length}</strong>
+                        {" on this page of "}<strong>{totalStudents}</strong>{" students"}
                     </div>
 
                 </div>
@@ -804,7 +1013,9 @@ function AdminStudents() {
                                     <th>Email</th>
                                     <th>Department</th>
                                     <th>Program</th>
+                                    <th>Batch</th>
                                     <th>Semester</th>
+                                    <th>Section</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -814,14 +1025,14 @@ function AdminStudents() {
                                 {filteredStudents.length === 0 ? (
                                     <tr>
                                         <td
-                                            colSpan="9"
+                                            colSpan="11"
                                             className="empty-state"
                                         >
                                             No students match the current search or filters.
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredStudents.map(
+                                    visibleStudents.map(
                                         (student) => (
                                             <tr
                                                 key={student.id}
@@ -855,9 +1066,15 @@ function AdminStudents() {
                                                     {student.programName}
                                                 </td>
 
+                                                <td>{student.cohortName || "Unassigned"}</td>
+
                                                 <td>
-                                                    {student.semesterNumber}
+                                                    {student.semesterNumber
+                                                        ? `Semester ${student.semesterNumber} · ${student.academicYear}`
+                                                        : "Not assigned"}
                                                 </td>
+
+                                                <td>{student.sectionName || "Unassigned"}</td>
 
                                                 <td>
 
@@ -904,6 +1121,26 @@ function AdminStudents() {
                             </tbody>
 
                         </table>
+
+                        <div className="pagination-controls" aria-label="Student pages">
+                            <button
+                                type="button"
+                                className="secondary-button"
+                                onClick={() => setPage((current) => Math.max(0, current - 1))}
+                                disabled={currentPage === 0}
+                            >
+                                Previous
+                            </button>
+                            <span>Page {currentPage + 1} of {pageCount}</span>
+                            <button
+                                type="button"
+                                className="secondary-button"
+                                onClick={() => setPage((current) => Math.min(pageCount - 1, current + 1))}
+                                disabled={currentPage >= pageCount - 1}
+                            >
+                                Next
+                            </button>
+                        </div>
 
                     </div>
                 )}

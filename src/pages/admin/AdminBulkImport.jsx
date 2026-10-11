@@ -11,7 +11,7 @@ const importOptions = [
         accept: ".csv,text/csv",
         extension: ".csv",
         format: "CSV header names (case-insensitive)",
-        columns: "username, password, fullName, email, rollNumber, departmentId, programId, semesterId"
+        columns: "username, password, fullName, email, rollNumber, departmentId, programId, semesterId, cohortId, sectionId"
     },
     {
         id: "students-excel",
@@ -20,7 +20,7 @@ const importOptions = [
         accept: ".xls,.xlsx",
         extension: ".xls or .xlsx",
         format: "Columns in order after the header row",
-        columns: "username, password, fullName, email, rollNumber, departmentId, programId, semesterId"
+        columns: "username, password, fullName, email, rollNumber, departmentId, programId, semesterId, cohortId, sectionId"
     },
     {
         id: "faculty-csv",
@@ -229,8 +229,13 @@ function AdminBulkImport() {
                 </div>
 
                 <div className="import-notice">
-                    Import files must use the listed fields and order. Each row is validated by the backend;
-                    the result will show how many rows were imported and any row-level errors.
+                    For student imports, include cohortId and sectionId after semesterId to place students
+                    in their academic cohort and section. These must be numeric Import IDs shown in the
+                    Admin Cohorts &amp; Sections tables and must belong to the selected program and semester.
+                    Leave both
+                    fields blank only when intentionally importing unplaced legacy records; older files
+                    without these columns remain supported. Each row is validated and the result lists
+                    row-level errors.
                 </div>
 
                 <div className="import-grid">
