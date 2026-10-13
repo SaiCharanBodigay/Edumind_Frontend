@@ -12,13 +12,42 @@ export function Modal({
     closeOnBackdrop = true
 }) {
     const modalRef = useRef(null);
+    const previouslyFocusedRef = useRef(null);
+    const onCloseRef = useRef(onClose);
+
+    useEffect(() => {
+        onCloseRef.current = onClose;
+    }, [onClose]);
 
     useEffect(() => {
         if (!isOpen) return;
 
+        previouslyFocusedRef.current = document.activeElement;
         const handleKeyDown = (event) => {
             if (event.key === "Escape") {
-                onClose?.();
+                onCloseRef.current?.();
+                return;
+            }
+
+            if (event.key === "Tab" && modalRef.current) {
+                const focusable = modalRef.current.querySelectorAll(
+                    'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])'
+                );
+                if (!focusable.length) {
+                    event.preventDefault();
+                    modalRef.current.focus();
+                    return;
+                }
+
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (event.shiftKey && document.activeElement === first) {
+                    event.preventDefault();
+                    last.focus();
+                } else if (!event.shiftKey && document.activeElement === last) {
+                    event.preventDefault();
+                    first.focus();
+                }
             }
         };
 
@@ -29,14 +58,20 @@ export function Modal({
         // Auto focus modal container
         const currentRef = modalRef.current;
         if (currentRef) {
-            currentRef.focus();
+            const firstFocusable = currentRef.querySelector(
+                'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])'
+            );
+            (firstFocusable || currentRef).focus();
         }
 
         return () => {
             document.body.style.overflow = originalOverflow;
             window.removeEventListener("keydown", handleKeyDown);
+            if (previouslyFocusedRef.current?.isConnected) {
+                previouslyFocusedRef.current.focus();
+            }
         };
-    }, [isOpen, onClose]);
+    }, [isOpen]);
 
     if (!isOpen) return null;
 

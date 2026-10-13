@@ -379,6 +379,7 @@ export function EduMindWordmark({ className = "", compact = false }) {
                     <span className="em-brand-tagline">University LMS</span>
                 </div>
             )}
+            {!compact && <img className="em-university-mark" src="/anurag-university-logo.png" alt="Anurag University" />}
         </div>
     );
 }

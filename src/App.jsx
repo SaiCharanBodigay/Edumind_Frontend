@@ -29,7 +29,9 @@ import StudentQuizzes from "./pages/student/StudentQuizzes";
 import StudentQuizDetail from "./pages/student/StudentQuizDetail";
 import StudentQuizAttempt from "./pages/student/StudentQuizAttempt";
 import StudentQuizResult from "./pages/student/StudentQuizResult";
+import LandingPage from "./pages/LandingPage";
 import "./styles/quizzes.css";
+import "./styles/app-refresh.css";
 
 function StudentRouteGuard({ children }) {
     const role = localStorage.getItem("edumind_role");
@@ -44,25 +46,13 @@ function StudentRouteGuard({ children }) {
 }
 
 function App() {
-    const role = localStorage.getItem("edumind_role");
-    const homePath = {
-        ADMIN: "/admin/dashboard",
-        FACULTY: "/faculty/dashboard",
-        STUDENT: "/student/dashboard"
-    }[role] || "/admin/login";
-
     return (
         <BrowserRouter>
             <Routes>
 
                 <Route
                     path="/"
-                    element={
-                        <Navigate
-                            to={homePath}
-                            replace
-                        />
-                    }
+                    element={<LandingPage />}
                 />
 
                 <Route

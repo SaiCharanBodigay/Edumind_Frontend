@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Icon, EduMindWordmark } from "./Icons";
 
@@ -9,6 +9,15 @@ export function AppShell({ role, portalName, navItems, children }) {
     const [isCollapsed, setIsCollapsed] = useState(() => {
         return localStorage.getItem("edumind_sidebar_collapsed") === "true";
     });
+
+    useEffect(() => {
+        if (!isMobileOpen) return undefined;
+        const closeOnEscape = (event) => {
+            if (event.key === "Escape") setIsMobileOpen(false);
+        };
+        window.addEventListener("keydown", closeOnEscape);
+        return () => window.removeEventListener("keydown", closeOnEscape);
+    }, [isMobileOpen]);
 
     const username = localStorage.getItem("edumind_username") || "User";
     const userRole = localStorage.getItem("edumind_role") || role;
@@ -56,6 +65,7 @@ export function AppShell({ role, portalName, navItems, children }) {
             <aside
                 className={`em-sidebar ${isMobileOpen ? "mobile-open" : ""}`}
                 aria-label={`${portalName} navigation`}
+                id="edumind-primary-navigation"
             >
                 {/* Brand Header */}
                 <div className="em-sidebar-header">
@@ -141,6 +151,8 @@ export function AppShell({ role, portalName, navItems, children }) {
                             className="em-mobile-toggle"
                             onClick={() => setIsMobileOpen(true)}
                             aria-label="Open mobile navigation menu"
+                            aria-expanded={isMobileOpen}
+                            aria-controls="edumind-primary-navigation"
                         >
                             <Icon name="menu" size={20} />
                         </button>
